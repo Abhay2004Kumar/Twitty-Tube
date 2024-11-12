@@ -22,6 +22,9 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser)
 
+router.route("/updateAvatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+
+router.route("/updateAvatar").post(updateUserAvatar)
 //secured routes
 router.route("/logout").post(verifyJWT, logOutUser)
 router.route("/refresh-token").post(refreshAccessToken)
