@@ -249,7 +249,7 @@ const updateAccount = asyncHandler(async (req,res) => {
     if (!fullname || !email) {
         throw new ApiError(400,"All fields are required!")
     }
-    User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.body?._id,
         {
             //Mongo DB operators
@@ -278,6 +278,8 @@ const updateUserAvatar = asyncHandler(async (req,res) => {
     if(!avatar){
         throw new ApiError(400,"Error while uploading an avatar!")
     }
+
+    //TODO : delete old avatar image
 
     await User.findByIdAndUpdate(
         req.user?._id,
