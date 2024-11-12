@@ -22,8 +22,6 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser)
 
-
-router.put('/updateAvatar', upload.single('file'), updateUserAvatar);
 //secured routes
 router.route("/logout").post(verifyJWT, logOutUser)
 router.route("/refresh-token").post(refreshAccessToken)
