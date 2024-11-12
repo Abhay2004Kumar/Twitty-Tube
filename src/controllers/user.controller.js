@@ -270,7 +270,7 @@ const updateAccount = asyncHandler(async (req,res) => {
 const updateUserAvatar = asyncHandler(async (req,res) => {
     const avatarLocalPath =  req.file?.path
 
-    const userId = req.user._id;
+    const userId = req.user?._id;
    
 
     if (!avatarLocalPath) {
