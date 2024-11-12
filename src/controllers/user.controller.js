@@ -270,12 +270,16 @@ const updateAccount = asyncHandler(async (req,res) => {
 const updateUserAvatar = asyncHandler(async (req,res) => {
     const avatarLocalPath =  req.file?.path
 
-    const user  = await User.findById(req.user._id)
-    // const oldAvatarPublicId = user.oldAvatarPublicId
+    const userId = req.user._id;
+   
 
     if (!avatarLocalPath) {
         throw new ApiError(400,"Avatar file is missing!")
     }
+
+    const user = await User.findById(userId);
+    const oldAvatarPublicId = user.avatarPublicId;  
+
 
     const avatar = await uploadCloudinary(avatarLocalPath)
     if(!avatar){
@@ -283,32 +287,30 @@ const updateUserAvatar = asyncHandler(async (req,res) => {
     }
 
     //TODO : delete old avatar image
-    // if(oldAvatarPublicId){
-    //     await cloudinary.uploader.destroy(oldAvatarPublicId, (error, result) => {
-    //         if (error) {
-    //             console.error("Error deleting old avatar:", error);
-    //         } else {
-    //             console.log("Old avatar deleted:", result);
-    //         }
-    //     })
-    // }
+    if (oldAvatarPublicId) {
+        await cloudinary.uploader.destroy(oldAvatarPublicId, (error, result) => {
+            if (error) {
+                console.error("Error deleting old avatar:", error);
+            } else {
+                console.log("Old avatar deleted:", result);
+            }
+        });
+    }
 
 
-    await User.findByIdAndUpdate(
-        req.user?._id,
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
         {
             $set: {
-                avatar: avatar.url
-            }
+                avatar: avatar.url,
+                avatarPublicId: avatar.public_id, // Save new public ID for future deletion
+            },
         },
-        {new: true}
-    ).select("-password")
+        { new: true }
+    ).select("-password");
 
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200,
-            avatar, "Avatar image updated successfully!")
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "Avatar image updated successfully!")
     )
 })
 
