@@ -278,7 +278,6 @@ const updateUserAvatar = asyncHandler(async (req,res) => {
     }
 
     const user = await User.findById(userId);
-    const oldAvatarPublicId = user.avatarPublicId;  
 
 
     const avatar = await uploadCloudinary(avatarLocalPath)
@@ -287,23 +286,14 @@ const updateUserAvatar = asyncHandler(async (req,res) => {
     }
 
     //TODO : delete old avatar image
-    if (oldAvatarPublicId) {
-        await cloudinary.uploader.destroy(oldAvatarPublicId, (error, result) => {
-            if (error) {
-                console.error("Error deleting old avatar:", error);
-            } else {
-                console.log("Old avatar deleted:", result);
-            }
-        });
-    }
-
+   
 
     const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
             $set: {
-                avatar: avatar.url,
-                avatarPublicId: avatar.public_id, // Save new public ID for future deletion
+                avatar: avatar.url
+                // avatarPublicId: avatar.public_id, // Save new public ID for future deletion
             },
         },
         { new: true }
