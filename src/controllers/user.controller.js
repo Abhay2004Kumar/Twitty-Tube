@@ -270,6 +270,9 @@ const updateAccount = asyncHandler(async (req,res) => {
 const updateUserAvatar = asyncHandler(async (req,res) => {
     const avatarLocalPath =  req.file?.path
 
+    const user  = await User.findById(req.user._id)
+    // const oldAvatarPublicId = user.oldAvatarPublicId
+
     if (!avatarLocalPath) {
         throw new ApiError(400,"Avatar file is missing!")
     }
@@ -280,6 +283,16 @@ const updateUserAvatar = asyncHandler(async (req,res) => {
     }
 
     //TODO : delete old avatar image
+    // if(oldAvatarPublicId){
+    //     await cloudinary.uploader.destroy(oldAvatarPublicId, (error, result) => {
+    //         if (error) {
+    //             console.error("Error deleting old avatar:", error);
+    //         } else {
+    //             console.log("Old avatar deleted:", result);
+    //         }
+    //     })
+    // }
+
 
     await User.findByIdAndUpdate(
         req.user?._id,
