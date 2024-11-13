@@ -326,6 +326,16 @@ const updateUserCoverImg = asyncHandler(async (req,res) => {
         throw new ApiError(400,"Cover image file is missing!")
     }
 
+    const us = await User.findById(req.user._id);
+
+// Access the avatar property from the user document
+const prevAvatar = us?.coverImage;
+console.log(prevAvatar);
+const arr = prevAvatar.split('/');  
+console.log(arr[arr.length-1]);
+const newarr = arr[arr.length-1].split('.');
+console.log(newarr);
+    await deleteFromCloudinary(newarr[0])
     const coverImage = await uploadCloudinary(coverImgLocalPath)
     if(!coverImage){
         throw new ApiError(400,"Error while uploading the cover image!")
