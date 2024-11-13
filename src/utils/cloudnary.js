@@ -30,7 +30,7 @@ const uploadCloudinary = async (localFilePath) => {
 
 const deleteFromCloudinary = async (publicId, resourceType = 'image') => {
     try {
-      const result = await v2.uploader.destroy(publicId, { resource_type: resourceType });
+      const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
       console.log('Delete result:', result);
       return result;
     } catch (error) {
@@ -38,9 +38,7 @@ const deleteFromCloudinary = async (publicId, resourceType = 'image') => {
       throw error;
     }
   };
-  
 
 
-export {uploadCloudinary,
-deleteFromCloudinary
-}
+
+export {uploadCloudinary, deleteFromCloudinary}
