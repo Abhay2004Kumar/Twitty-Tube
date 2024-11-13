@@ -1,10 +1,10 @@
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js";
 import {User} from "../models/user.models.js"
-import {uploadCloudinary} from "../utils/cloudnary.js"
+import {deleteFromCloudinary, uploadCloudinary} from "../utils/cloudnary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
-import {v2} from 'cloudinary'
+
 
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
@@ -270,17 +270,7 @@ const updateAccount = asyncHandler(async (req,res) => {
         .json(new ApiResponse(200, user, "Account details updated successfully!"))
     })
     
-    const deleteFromCloudinary = async (publicId, resourceType = 'image') => {
-        try {
-          const result = await v2.uploader.destroy(publicId, { resource_type: resourceType });
-          console.log('Delete result:', result);
-          return result;
-        } catch (error) {
-          console.error('Error deleting from Cloudinary:', error);
-          throw error;
-        }
-      };
-      
+   
       
 const updateUserAvatar = asyncHandler(async(req, res) => {
     const avatarLocalPath = req.file?.path;
