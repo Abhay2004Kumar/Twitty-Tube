@@ -19,9 +19,9 @@ app.use(cookieParser())
 //routes import
 import userRouter from "./routes/user.routes.js"
 import videoRouter from "./routes/video.routes.js"
-import playlistRouter from "./routes/playlist.routes"
-import subsriptionRouter from "./routes/subscription.routes"
-import tweetRouter from "./routes/tweet.routes"
+import playlistRouter from "./routes/playlist.routes.js"
+import subsriptionRouter from "./routes/subscription.routes.js"
+import tweetRouter from "./routes/tweet.routes.js"
 import likeRouter from "./routes/like.routes.js"
 import commentRouter from "./routes/comment.routes.js"
 
