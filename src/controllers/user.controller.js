@@ -225,6 +225,10 @@ const changeCurrentPass = asyncHandler(async (req,res) => {
 
     const user = await User.findById(req.user?._id)
 
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
     
     if(!isPasswordCorrect){
@@ -254,11 +258,11 @@ const updateAccount = asyncHandler(async (req,res) => {
         throw new ApiError(400,"All fields are required!")
     }
     const user = await User.findByIdAndUpdate(
-        req.body?._id,
+        req.user?._id,
         {
             //Mongo DB operators
             $set: {
-                fullname,
+                fullname: fullname,
                 email: email
             }
         },
