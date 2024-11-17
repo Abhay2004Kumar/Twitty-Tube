@@ -129,8 +129,87 @@ const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
-    // TODO: get video, upload to cloudinary, create video
+    const {
+        title, description, isPublished
+    } = req.body;
+
+    
+    // checking the title and description should not be empty...
+    if([title,description].some((field) => {
+        field.trim() === ""
+    })){
+        throw new ApiError(400, "Please provide full details");
+    }
+
+    const localPathVideoFile = req.files?.videoFile[0].path;
+
+    const localPathThumbnail = req.files?.thumbnail[0].path;
+
+    if(
+        !localPathVideoFile || !localPathThumbnail
+    ){
+        throw new ApiError(400, "Please provide videoFile and thumbnail path");
+    }
+
+    //uploading video file in cloudinary
+    let videoFile
+    try {
+       videoFile = await uploadOnCloudinary(localPathVideoFile)
+       console.log("Video uploaded successfully :",videoFile.url, videoFile.duration); 
+    } catch (error) {
+        console.log("erroor in uploading video ", error);
+    }
+
+    let thumbnail;
+    try {
+        thumbnail = await uploadOnCloudinary(localPathThumbnail);
+        console.log("Thumbnail file uploaded successfully on cloudinary :", thumbnail.url)
+    } catch (error) {
+        console.log("Error in uploading thumbnail on cloudinary", error);
+    }
+
+    //create a video
+    try {
+        const video = await Video.create({
+            title,
+            description,
+            videoFile: videoFile.url,
+            thumbnail: thumbnail.url,
+            uploader: req.user?._id,
+            duration: videoFile.duration,
+            isPublished
+        })
+        
+        if(!video){
+            throw new ApiError(400,"Video creation failed!!!");
+        }
+
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(
+                    201,
+                    {
+                        video
+                    },
+                    "Video created successfully"
+                )
+            )
+    } catch (error) {
+        console.log("Some error has occured during creation: ",error);
+        if(videoFile){
+            await deleteFromCloudinary(videoFile.public_id);
+            console.log("Video file deleted from the cloudinary...", videoFile.public_id)
+        }
+
+        if(thumbnail){
+            await deleteFromCloudinary(thumbnail.public_id);
+            console.log("Thumbnail file deleted from the cloudinary...", thumbnail.public_id)
+        }
+
+        throw new ApiError(500, "Internal server error")
+    }
+
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
@@ -440,6 +519,46 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    if(!videoId){
+        throw new ApiError(400, "Please provide the video Id")
+    }
+
+    const videoExisted = await Video.findById(videoId)
+
+    if(videoExisted?.uploader.toString() !== req.user._id.toString()){
+        throw new ApiError(400, "Unauthorized access to the video")
+    }
+
+    const video = await Video.findByIdAndUpdate(videoId,
+        {
+            $set: {
+                isPublished: !videoExisted.isPublished
+            }
+        },
+        {
+            new: true
+        }
+        )
+
+    if(!video){
+        throw new ApiError(400, "No video found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                video
+            },
+            "Publish toggled successfully"
+        )
+    )
+
+
+
 })
 
 export {
