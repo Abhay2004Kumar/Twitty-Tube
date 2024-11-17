@@ -6,6 +6,99 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { Video } from "../models/video.models.js"
 import {Tweet} from "../models/tweet.models.js"
 
+const getLikedTweets = asyncHandler(async (req, res) => {
+    
+    const userId = req.user._id;
+
+    const tweet = await Like.aggregate(
+        [
+            {
+                $match : {
+                    likedBy : mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup : {
+                    from : "tweets",
+                    localField : "tweet",
+                    foreignField : "_id",
+                    as : "tweet",
+                    pipeline : [
+                        {
+                            $lookup : {
+                                from : "users",
+                                localField : "uploader",
+                                foreignField : "_id",
+                                as : "uploader"
+                            }
+                        },
+                        {
+                            $addFields : {
+                                uploader : {
+                                    $first : "$uploader"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $lookup : {
+                    from : "users",
+                    localField : "likedBy",
+                    foreignField : "_id",
+                    as : "likedBy",
+                }
+            },
+            {
+                $addFields : {
+                    tweet : {
+                        $first : "$tweet"
+                    },
+                    likedBy : {
+                        $first : "$likedBy"
+                    },
+                    totaltweet : {
+                        $size : "$tweet"
+                    }
+                }
+            },
+            {
+                $project : {
+                    tweet : {
+                        content : 1,
+                        createdAt : 1,
+                        updatedAt : 1,
+                        uploader : 1
+                    },
+                    likedBy : {
+                        username : 1,
+                        fullName : 1,
+                        avatar : 1
+                    },
+                    totaltweet : 1
+                }
+            }
+
+        ]
+    )
+
+    if(tweet.length === 0){
+        throw new ApiError(400, "Likes not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                tweet,
+                "Likes found successfully"
+            )
+        )
+
+})
+
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const {videoId} = req.params
     //TODO: toggle like on video
@@ -221,7 +314,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
                         isPublised : 1,
                         createdAt : 1,
                         updatedAt : 1,
-                        owner : 1
+                        uploader : 1
                     },
                     likedBy : {
                         username : 1,
@@ -248,14 +341,109 @@ const getLikedVideos = asyncHandler(async (req, res) => {
                 "Likes found successfully"
             )
         )
+})
+
+const getLikedComments = asyncHandler(async (req, res) => {
+    
+    const userId = req.user._id;
 
 
+    const comment = await Like.aggregate(
+        [
+            {
+                $match : {
+                    likedBy : mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup : {
+                    from : "comments",
+                    localField : "comment",
+                    foreignField : "_id",
+                    as : "commentDetails",
+                    pipeline : [
+                        {
+                            $lookup : {
+                                from : "users",
+                                localField : "uploader",
+                                foreignField : "_id",
+                                as : "uploader"
+                            }
+                        },
+                        {
+                            $addFields : {
+                                uploader : {
+                                    $first : "$uploader"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $lookup : {
+                    from : "users",
+                    localField : "likedBy",
+                    foreignField : "_id",
+                    as : "likedBy",
+                }
+            },
+            {
+                $addFields : {
+                    comment : {
+                        $first : "$commentDetails"
+                    },
+                    likedBy : {
+                        $first : "$likedBy"
+                    },
+                    totalComment : {
+                        $size : "$commentDetails"
+                    }
+                }
+            },
+            {
+                $project : {
+                    comment : {
+                        content : 1,
+                        createdAt : 1,
+                        updatedAt : 1,
+                        video : 1,
+                        uploader : 1
+                    },
+                    likedBy : {
+                        username : 1,
+                        fullName : 1,
+                        avatar : 1
+                    },
+                    totalComment : 1
+                }
+            }
 
+        ]
+    )
+
+    if(comment.length === 0){
+        throw new ApiError(400, "Likes not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                comment,
+                "Likes found successfully"
+            )
+        )
+
+    
 })
 
 export {
     toggleCommentLike,
     toggleTweetLike,
     toggleVideoLike,
-    getLikedVideos
+    getLikedVideos,
+    getLikedTweets,
+    getLikedComments
 }
