@@ -1,9 +1,9 @@
-import { ApiError } from "../helper/ApiError.js";
-import { Tweet } from "../models/tweet.model.js";
-import {ApiResponse} from "../helper/ApiResponse.js"
-import { asyncHandler } from "../helper/asyncHandler.js";
-import { Like } from "../models/like.model.js";
-import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
+import { Tweet } from "../models/tweet.models.js";
+import {ApiResponse} from "../utils/ApiResponse.js"
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { Like } from "../models/like.models.js";
+import { User } from "../models/user.models.js";
 import mongoose from "mongoose";
 
 

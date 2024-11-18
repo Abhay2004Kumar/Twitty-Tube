@@ -1,10 +1,10 @@
 import mongoose, {isValidObjectId} from "mongoose"
-import {Video} from "../models/video.model.js"
-import {User} from "../models/user.model.js"
+import {Video} from "../models/video.models.js"
+import {User} from "../models/user.models.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
+import {uploadCloudinary, deleteFromCloudinary} from "../utils/cloudnary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -154,7 +154,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     //uploading video file in cloudinary
     let videoFile
     try {
-       videoFile = await uploadOnCloudinary(localPathVideoFile)
+       videoFile = await uploadCloudinary(localPathVideoFile)
        console.log("Video uploaded successfully :",videoFile.url, videoFile.duration); 
     } catch (error) {
         console.log("erroor in uploading video ", error);
@@ -162,7 +162,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
     let thumbnail;
     try {
-        thumbnail = await uploadOnCloudinary(localPathThumbnail);
+        thumbnail = await uploadCloudinary(localPathThumbnail);
         console.log("Thumbnail file uploaded successfully on cloudinary :", thumbnail.url)
     } catch (error) {
         console.log("Error in uploading thumbnail on cloudinary", error);
@@ -418,7 +418,7 @@ const updateVideoThumbnail = asyncHandler( async (req,res) => {
         console.log("Thumbnail file deleted of previous file from the cloudinary");
     }
 
-    const thumbnail = await uploadOnCloudinary(localPathThumbnail);
+    const thumbnail = await uploadCloudinary(localPathThumbnail);
 
     video.thumbnail = thumbnail.url;
 
